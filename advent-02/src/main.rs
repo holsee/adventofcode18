@@ -1,3 +1,5 @@
+use core::iter::FromIterator;
+use itertools::Itertools;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::prelude::*;
@@ -9,14 +11,68 @@ fn main() -> io::Result<()> {
         let checksum = checksum(file);
         println!("Checksum: {}", checksum);
     };
+    if let Ok(file) = file_reader(&filename) {
+	for common in find_common_patterns(file) {
+	    println!("Common Pattern: {:?}", common);
+	}
+    }
     Ok(())
 }
+
+/**
+ * Part 2
+ */
+
+fn find_common_patterns(file: BufReader<File>) -> Vec<String> {
+    let common_codes: Vec<_> = file
+        .lines()
+        .filter_map(|line| line.ok())
+        .combinations(2)
+        .map(|pair| {
+            let code: Vec<char> = pair[0].chars().collect();
+            let other: Vec<char> = pair[1].chars().collect();
+            let mut diff: usize = 0;
+            let mut common: Vec<char> = Vec::with_capacity(code.len());
+            for (i, code_char) in code.iter().enumerate() {
+                let other_char: char = other[i];
+                let mismatch: bool = code_char.ne(&other_char);
+                if mismatch {
+                    diff += 1;
+                    common.insert(i, '_');
+                } else {
+                    common.insert(i, other_char);
+                }
+            }
+            if diff == 1 {
+                // println!(
+                //     "  code: {:?} \n other: {:?}\ncommon: {:?}",
+                //     code, other, common
+                // );
+                let pattern = String::from_iter(common);
+                Some(pattern)
+            } else {
+                None
+            }
+        })
+        .filter_map(|res| res)
+        .collect();
+
+     common_codes
+}
+
+/**
+ * Common
+ */
 
 fn file_reader(filename: &str) -> Result<BufReader<File>, std::io::Error> {
     let file = File::open(filename)?;
     let br = BufReader::new(file);
     Ok(br)
 }
+
+/**
+ * Part 1
+ */
 
 fn checksum(file: BufReader<File>) -> usize {
     let (x, y): (usize, usize) = file.lines().fold((0, 0), |(ls, rs), line| match line {
