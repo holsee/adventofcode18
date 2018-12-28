@@ -1,69 +1,67 @@
 use std::collections::HashSet;
-use std::fs::File;
-use std::io::prelude::*;
-use std::io::{self, BufReader};
+use std::error::Error;
+use std::io::{self, Read, Write};
+use std::result;
 
-#[allow(unused_must_use)]
-fn main() -> io::Result<()> {
-    one();
-    two()
-}
+type Result<T> = result::Result<T, Box<Error>>;
 
-fn one() -> io::Result<()> {
-    let file = File::open("input.txt")?;
-    let br = BufReader::new(file);
-    let final_freq = br
-        .lines()
-        .map(|line| -> i32 {
-            match line {
-                Ok(v) => {
-                    let x = v.parse::<i32>();
-                    match x {
-                        Ok(i) => i,
-                        Err(_) => 0,
-                    }
-                }
-                Err(_) => 0,
-            }
-        })
-        .sum::<i32>();
+fn main() -> Result<()> {
+    let mut input = String::new();
+    io::stdin().read_to_string(&mut input)?;
 
-    println!("Final Frequency: {}", final_freq);
+    let final_freq = one(&input)?;
+    writeln!(io::stdout(), "Final Frequency: {}", final_freq)?;
+
+    let first_recurrent_freq = two(&input)?;
+    writeln!(
+        io::stdout(),
+        "First Recurrent Freqeuency: {}",
+        first_recurrent_freq
+    )?;
 
     Ok(())
 }
 
-fn two() -> io::Result<()> {
-    let file = File::open("input.txt")?;
-    let br = BufReader::new(file);
-
-    let input: Vec<i32> = br
+fn one(input: &str) -> Result<i32> {
+    let final_freq: i32 = input
         .lines()
-        .map(|line| -> i32 {
-            match line {
-                Ok(v) => {
-                    let x = v.parse::<i32>();
-                    match x {
-                        Ok(i) => i,
-                        Err(_) => 0,
-                    }
-                }
-                Err(_) => 0,
-            }
-        })
-        .collect();
+        .map(|line| line.parse::<i32>())
+        .filter_map(|r| r.ok())
+        .sum();
 
-    let length = input.len();
+    Ok(final_freq)
+}
+
+fn two(input: &str) -> Result<i32> {
+    let mut freqs = input
+        .lines()
+        .map(|line| line.parse::<i32>())
+        .filter_map(|r| r.ok())
+        .cycle();
+
     let mut history = HashSet::new();
     let mut freq: i32 = 0;
-    let mut idx: usize = 0;
 
     while history.insert(freq) {
-        freq += input[idx % length];
-        idx += 1;
+        if let Some(f) = freqs.next() {
+            freq += f;
+        }
     }
 
-    println!("First Recurrent Freqeuency: {}", freq);
+    Ok(freq)
+}
 
-    Ok(())
+#[test]
+fn one_should_return_final_freqency() {
+    assert_eq!(360, one("100\n200\n60\n400\n-400").unwrap());
+}
+
+#[test]
+fn one_should_ignore_non_int_input() {
+    assert_eq!(360, one("100\n200\nlolololol\n60\n").unwrap());
+}
+
+#[test]
+fn two_should_return_first_recurrent_freqency() {
+    assert_eq!(300, two("100\n200\n60\n-60").unwrap());
 }
