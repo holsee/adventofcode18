@@ -10,14 +10,10 @@ fn main() -> Result<()> {
     io::stdin().read_to_string(&mut input)?;
 
     let final_freq = one(&input)?;
-    writeln!(io::stdout(), "Final Frequency: {}", final_freq)?;
+    writeln!(io::stdout(), "Final Freq: {}", final_freq)?;
 
     let first_recurrent_freq = two(&input)?;
-    writeln!(
-        io::stdout(),
-        "First Recurrent Freqeuency: {}",
-        first_recurrent_freq
-    )?;
+    writeln!(io::stdout(), "1st Recurrent Freq: {}", first_recurrent_freq)?;
 
     Ok(())
 }

@@ -5,6 +5,6 @@ https://adventofcode.com/ Solutions in Rust.
 
 Running Solutions:
 ```
-$ cd advent-01
+$ cd aoc01
 $ cargo run < input.txt
 ```
