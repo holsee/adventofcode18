@@ -7,7 +7,7 @@ use std::result;
 
 type Result<T> = result::Result<T, Box<Error>>;
 type Surface = Vec<[u8; 1000]>;
-type ClaimCode<'a> = (usize, (usize, usize), (usize, usize));
+type ClaimCode = (usize, (usize, usize), (usize, usize));
 
 fn main() -> Result<()> {
     let mut input = String::new();
