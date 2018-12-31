@@ -6,7 +6,7 @@ use std::io::{self, Read, Write};
 use std::result;
 
 type Result<T> = result::Result<T, Box<Error>>;
-type Surface = [[u8; 1000]; 1000];
+type Surface = Vec<[u8; 1000]>;
 type ClaimCode<'a> = (usize, (usize, usize), (usize, usize));
 
 fn main() -> Result<()> {
@@ -23,7 +23,7 @@ fn main() -> Result<()> {
 
 fn compute_surface(input: String) -> Result<Surface> {
     // Representation of surface
-    let mut area = [[0u8; 1000]; 1000];
+    let mut area = vec![[0u8; 1000]; 1000];
 
     // Parse codes
     for pattern in input.lines() {
@@ -79,7 +79,6 @@ fn parse_code(pattern: &str) -> Option<ClaimCode> {
     }
 }
 
-
 #[test]
 fn compute_surface_should_be_completely_unset_on_no_input() {
     let surface = compute_surface("#1 @ 55,885: 22x10\n#2 @ 102,14: 23x14".to_string());
@@ -90,7 +89,7 @@ fn compute_surface_should_be_completely_unset_on_no_input() {
 
 #[test]
 fn area_with_overlapping_claims_should_return_0_when_no_overlap() {
-    let surface = [[0u8; 1000]; 1000];
+    let surface = vec![[0u8; 1000]; 1000];
     let area = area_with_overlapping_claims(surface).unwrap();
     assert_eq!(0, area);
 }
