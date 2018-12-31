@@ -33,10 +33,7 @@ fn compute_surface(input: String) -> Result<Surface> {
                 for y in 0..ys {
                     let x = x_start + x;
                     let y = y_start + y;
-                    if area[x][y] > 1 {
-                    } else {
-                        area[x][y] += 1
-                    }
+                    area[x][y] += 1
                 }
             }
         }
