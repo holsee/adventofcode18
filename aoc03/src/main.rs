@@ -4,6 +4,7 @@ use regex::Regex;
 use std::error::Error;
 use std::io::{self, Read, Write};
 use std::result;
+use std::collections::{HashMap, HashSet};
 
 type Result<T> = result::Result<T, Box<Error>>;
 type Surface = Vec<[u8; 1000]>;
@@ -13,15 +14,24 @@ fn main() -> Result<()> {
     let mut input = String::new();
     io::stdin().read_to_string(&mut input)?;
 
-    let surface = compute_surface(input)?;
+    let surface = compute_surface(&input)?;
 
     let area = area_with_overlapping_claims(surface)?;
     writeln!(io::stdout(), "Area with overlapping Claims: {} in^2", area)?;
 
+    let ids = find_ids_with_no_overlap(&input)?;
+    writeln!(io::stdout(), "Ids with no overlap: {:?}", ids)?;
+
     Ok(())
 }
 
-fn compute_surface(input: String) -> Result<Surface> {
+
+
+/**
+ * Part 1
+ */
+
+fn compute_surface(input: &String) -> Result<Surface> {
     // Representation of surface
     let mut area = vec![[0u8; 1000]; 1000];
 
@@ -33,7 +43,7 @@ fn compute_surface(input: String) -> Result<Surface> {
                 for y in 0..ys {
                     let x = x_start + x;
                     let y = y_start + y;
-                    area[x][y] += 1
+                    area[x][y] += 1;
                 }
             }
         }
@@ -41,10 +51,6 @@ fn compute_surface(input: String) -> Result<Surface> {
 
     Ok(area)
 }
-
-/**
- * Part 1
- */
 
 fn area_with_overlapping_claims(surface: Surface) -> Result<usize> {
     let mut count: usize = 0;
@@ -74,6 +80,39 @@ fn parse_code(pattern: &str) -> Option<ClaimCode> {
     } else {
         None
     }
+}
+
+/**
+ * Part 2
+ */
+
+fn find_ids_with_no_overlap(input: &String) -> Result<HashSet<usize>> {
+    // Representation of surface
+    let mut ids = HashMap::new();
+    let mut uniq_ids = HashSet::new();
+
+    // Parse codes
+    for pattern in input.lines() {
+        if let Some((id, (x_start, y_start), (xs, ys))) = parse_code(pattern) {
+            uniq_ids.insert(id);
+            // Update surface
+            for x in 0..xs {
+                for y in 0..ys {
+                    let x = x_start + x;
+                    let y = y_start + y;
+                    match ids.insert((x, y), id) {
+                        Some(prev) => {
+                            uniq_ids.remove(&id);
+                            uniq_ids.remove(&prev);
+                        },
+                        None => ()
+                    }
+                }
+            }
+        }
+    }
+
+    Ok(uniq_ids)
 }
 
 #[test]
